@@ -106,3 +106,4 @@ Your CMS works with any static hosting:
 ---
 
 **🎉 Congratulations!** You now have a professional, editable personal website that you can update anytime without touching code!
+

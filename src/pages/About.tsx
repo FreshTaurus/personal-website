@@ -5,7 +5,17 @@ import EditableText from '../components/EditableText';
 import EditableList from '../components/EditableList';
 
 const About: React.FC = () => {
-  const { data, isEditMode, updatePersonalInfo, updateSkills, updateInterests } = useCMS();
+  const { data, isEditMode, updatePersonalInfo, updateEducation, updateSkills, updateInterests } = useCMS();
+  
+  // Fallback for education data if not loaded yet
+  const education = data.education || {
+    school: "Borough of Manhattan Community College (BMCC)",
+    degree: "Bachelor of Science in Computer Science",
+    startYear: "2022",
+    endYear: "2024",
+    description: "Currently pursuing my Bachelor's degree in Computer Science with a focus on software development, data structures, and algorithms. Maintaining a strong GPA while actively participating in coding competitions and hackathons.",
+    transferGoal: "Transfer goal: Columbia University (Fall 2024)"
+  };
 
   const skills = [
     { category: 'Programming Languages', items: data.skills.programmingLanguages },
@@ -112,22 +122,71 @@ const About: React.FC = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                      Borough of Manhattan Community College (BMCC)
+                      {isEditMode ? (
+                        <EditableText
+                          value={education.school}
+                          onChange={(value) => updateEducation({ school: value })}
+                          className="text-xl font-semibold text-gray-900 dark:text-white"
+                          tag="span"
+                        />
+                      ) : (
+                        education.school
+                      )}
                     </h3>
                     <p className="text-primary-600 dark:text-primary-400 font-medium">
-                      Bachelor of Science in Computer Science
+                      {isEditMode ? (
+                        <EditableText
+                          value={education.degree}
+                          onChange={(value) => updateEducation({ degree: value })}
+                          className="text-primary-600 dark:text-primary-400 font-medium"
+                          tag="span"
+                        />
+                      ) : (
+                        education.degree
+                      )}
                     </p>
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">2022 - 2024</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {isEditMode ? (
+                      <EditableText
+                        value={`${education.startYear} - ${education.endYear}`}
+                        onChange={(value) => {
+                          const [start, end] = value.split(' - ');
+                          updateEducation({ startYear: start, endYear: end });
+                        }}
+                        className="text-sm text-gray-500 dark:text-gray-400"
+                        tag="span"
+                      />
+                    ) : (
+                      `${education.startYear} - ${education.endYear}`
+                    )}
+                  </span>
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Currently pursuing my Bachelor's degree in Computer Science with a focus on 
-                  software development, data structures, and algorithms. Maintaining a strong GPA 
-                  while actively participating in coding competitions and hackathons.
+                  {isEditMode ? (
+                    <EditableText
+                      value={education.description}
+                      onChange={(value) => updateEducation({ description: value })}
+                      className="text-gray-600 dark:text-gray-400"
+                      tag="span"
+                      multiline
+                    />
+                  ) : (
+                    education.description
+                  )}
                 </p>
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                   <Target className="w-4 h-4 mr-2" />
-                  Transfer goal: Columbia University (Fall 2024)
+                  {isEditMode ? (
+                    <EditableText
+                      value={education.transferGoal}
+                      onChange={(value) => updateEducation({ transferGoal: value })}
+                      className="text-sm text-gray-500 dark:text-gray-400"
+                      tag="span"
+                    />
+                  ) : (
+                    education.transferGoal
+                  )}
                 </div>
               </div>
             </section>

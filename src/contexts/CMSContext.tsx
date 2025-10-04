@@ -11,6 +11,14 @@ export interface CMSData {
     intro: string;
     personalStatement: string;
   };
+  education: {
+    school: string;
+    degree: string;
+    startYear: string;
+    endYear: string;
+    description: string;
+    transferGoal: string;
+  };
   projects: Array<{
     id: number;
     title: string;
@@ -49,6 +57,14 @@ const defaultCMSData: CMSData = {
     bio: "Passionate Computer Science student with a drive to create innovative solutions and make a positive impact through technology.",
     intro: "Computer Science Student at BMCC, aspiring to transfer to Columbia University",
     personalStatement: "As a Computer Science student, I believe in the power of technology to solve real-world problems. My journey in programming started with curiosity and has evolved into a passion for creating efficient, user-friendly applications. I'm committed to continuous learning and staying updated with the latest technologies while contributing to meaningful projects that make a difference in people's lives."
+  },
+  education: {
+    school: "Borough of Manhattan Community College (BMCC)",
+    degree: "Bachelor of Science in Computer Science",
+    startYear: "2022",
+    endYear: "2024",
+    description: "Currently pursuing my Bachelor's degree in Computer Science with a focus on software development, data structures, and algorithms. Maintaining a strong GPA while actively participating in coding competitions and hackathons.",
+    transferGoal: "Transfer goal: Columbia University (Fall 2024)"
   },
   projects: [
     {
@@ -105,6 +121,7 @@ interface CMSContextType {
   isAuthenticated: boolean;
   setData: (data: CMSData) => void;
   updatePersonalInfo: (updates: Partial<CMSData['personalInfo']>) => void;
+  updateEducation: (updates: Partial<CMSData['education']>) => void;
   updateProject: (id: number, updates: Partial<CMSData['projects'][0]>) => void;
   addProject: (project: Omit<CMSData['projects'][0], 'id'>) => void;
   deleteProject: (id: number) => void;
@@ -151,7 +168,17 @@ export const CMSProvider: React.FC<CMSProviderProps> = ({ children }) => {
       const savedData = localStorage.getItem('cms-data');
       if (savedData) {
         const parsedData = JSON.parse(savedData);
-        setData(parsedData);
+        // Merge with default data to handle new fields
+        const mergedData = {
+          ...defaultCMSData,
+          ...parsedData,
+          // Ensure education object exists
+          education: {
+            ...defaultCMSData.education,
+            ...parsedData.education
+          }
+        };
+        setData(mergedData);
       }
     } catch (error) {
       console.error('Error loading CMS data:', error);
@@ -190,6 +217,13 @@ export const CMSProvider: React.FC<CMSProviderProps> = ({ children }) => {
     setData(prev => ({
       ...prev,
       personalInfo: { ...prev.personalInfo, ...updates }
+    }));
+  };
+
+  const updateEducation = (updates: Partial<CMSData['education']>) => {
+    setData(prev => ({
+      ...prev,
+      education: { ...prev.education, ...updates }
     }));
   };
 
@@ -268,6 +302,7 @@ export const CMSProvider: React.FC<CMSProviderProps> = ({ children }) => {
     isAuthenticated,
     setData,
     updatePersonalInfo,
+    updateEducation,
     updateProject,
     addProject,
     deleteProject,
