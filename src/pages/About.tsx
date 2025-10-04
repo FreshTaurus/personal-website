@@ -1,21 +1,17 @@
 import React from 'react';
 import { GraduationCap, Code, Target, Award, MapPin, Calendar } from 'lucide-react';
+import { useCMS } from '../contexts/CMSContext';
+import EditableText from '../components/EditableText';
+import EditableList from '../components/EditableList';
 
 const About: React.FC = () => {
-  const skills = [
-    { category: 'Programming Languages', items: ['Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'SQL'] },
-    { category: 'Web Development', items: ['React', 'Node.js', 'Express', 'HTML5', 'CSS3', 'TailwindCSS'] },
-    { category: 'Databases', items: ['MongoDB', 'PostgreSQL', 'MySQL', 'Redis'] },
-    { category: 'Tools & Technologies', items: ['Git', 'Docker', 'AWS', 'Linux', 'VS Code', 'Figma'] },
-  ];
+  const { data, isEditMode, updatePersonalInfo, updateSkills, updateInterests } = useCMS();
 
-  const interests = [
-    'Full-Stack Development',
-    'Machine Learning',
-    'Data Structures & Algorithms',
-    'Mobile App Development',
-    'Cloud Computing',
-    'Open Source Contribution'
+  const skills = [
+    { category: 'Programming Languages', items: data.skills.programmingLanguages },
+    { category: 'Web Development', items: data.skills.webDevelopment },
+    { category: 'Databases', items: data.skills.databases },
+    { category: 'Tools & Technologies', items: data.skills.tools },
   ];
 
   return (
@@ -27,8 +23,17 @@ const About: React.FC = () => {
             About Me
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            Passionate Computer Science student with a drive to create innovative solutions 
-            and make a positive impact through technology.
+            {isEditMode ? (
+              <EditableText
+                value={data.personalInfo.bio}
+                onChange={(value) => updatePersonalInfo({ bio: value })}
+                className="text-xl text-gray-600 dark:text-gray-400"
+                tag="span"
+                multiline
+              />
+            ) : (
+              data.personalInfo.bio
+            )}
           </p>
         </div>
 
@@ -41,19 +46,55 @@ const About: React.FC = () => {
                 <span className="text-4xl text-gray-400">📸</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Your Name
+                {isEditMode ? (
+                  <EditableText
+                    value={data.personalInfo.name}
+                    onChange={(value) => updatePersonalInfo({ name: value })}
+                    className="text-2xl font-bold text-gray-900 dark:text-white"
+                    tag="span"
+                  />
+                ) : (
+                  data.personalInfo.name
+                )}
               </h2>
               <p className="text-primary-600 dark:text-primary-400 font-semibold mb-4">
-                Computer Science Student
+                {isEditMode ? (
+                  <EditableText
+                    value={data.personalInfo.title}
+                    onChange={(value) => updatePersonalInfo({ title: value })}
+                    className="text-primary-600 dark:text-primary-400 font-semibold"
+                    tag="span"
+                  />
+                ) : (
+                  data.personalInfo.title
+                )}
               </p>
               <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                 <div className="flex items-center justify-center">
                   <MapPin className="w-4 h-4 mr-2" />
-                  New York, NY
+                  {isEditMode ? (
+                    <EditableText
+                      value={data.personalInfo.location}
+                      onChange={(value) => updatePersonalInfo({ location: value })}
+                      className="text-sm text-gray-600 dark:text-gray-400"
+                      tag="span"
+                    />
+                  ) : (
+                    data.personalInfo.location
+                  )}
                 </div>
                 <div className="flex items-center justify-center">
                   <Calendar className="w-4 h-4 mr-2" />
-                  Expected Graduation: 2025
+                  Expected Graduation: {isEditMode ? (
+                    <EditableText
+                      value={data.personalInfo.graduationYear}
+                      onChange={(value) => updatePersonalInfo({ graduationYear: value })}
+                      className="text-sm text-gray-600 dark:text-gray-400"
+                      tag="span"
+                    />
+                  ) : (
+                    data.personalInfo.graduationYear
+                  )}
                 </div>
               </div>
             </div>
@@ -103,16 +144,30 @@ const About: React.FC = () => {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                       {skill.category}
                     </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {skill.items.map((item, itemIndex) => (
-                        <span
-                          key={itemIndex}
-                          className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm rounded-full"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
+                    {isEditMode ? (
+                      <EditableList
+                        items={skill.items}
+                        onChange={(items) => {
+                          const categoryKey = skill.category === 'Programming Languages' ? 'programmingLanguages' :
+                                           skill.category === 'Web Development' ? 'webDevelopment' :
+                                           skill.category === 'Databases' ? 'databases' : 'tools';
+                          updateSkills(categoryKey as keyof typeof data.skills, items);
+                        }}
+                        placeholder={`Add ${skill.category.toLowerCase()}...`}
+                        className="space-y-2"
+                      />
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {skill.items.map((item: string, itemIndex: number) => (
+                          <span
+                            key={itemIndex}
+                            className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm rounded-full"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -130,17 +185,26 @@ const About: React.FC = () => {
                   of technology and user experience. My goal is to become a full-stack developer with 
                   expertise in modern frameworks and cloud technologies.
                 </p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {interests.map((interest, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center text-sm text-gray-700 dark:text-gray-300"
-                    >
-                      <div className="w-2 h-2 bg-primary-500 rounded-full mr-3"></div>
-                      {interest}
-                    </div>
-                  ))}
-                </div>
+                {isEditMode ? (
+                  <EditableList
+                    items={data.interests}
+                    onChange={updateInterests}
+                    placeholder="Add career interest..."
+                    className="space-y-2"
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {data.interests.map((interest: string, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center text-sm text-gray-700 dark:text-gray-300"
+                      >
+                        <div className="w-2 h-2 bg-primary-500 rounded-full mr-3"></div>
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 
@@ -151,11 +215,17 @@ const About: React.FC = () => {
               </h2>
               <div className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-xl p-8">
                 <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                  "As a Computer Science student, I believe in the power of technology to solve real-world 
-                  problems. My journey in programming started with curiosity and has evolved into a passion 
-                  for creating efficient, user-friendly applications. I'm committed to continuous learning 
-                  and staying updated with the latest technologies while contributing to meaningful projects 
-                  that make a difference in people's lives."
+                  {isEditMode ? (
+                    <EditableText
+                      value={data.personalInfo.personalStatement}
+                      onChange={(value) => updatePersonalInfo({ personalStatement: value })}
+                      className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed"
+                      tag="span"
+                      multiline
+                    />
+                  ) : (
+                    `"${data.personalInfo.personalStatement}"`
+                  )}
                 </p>
               </div>
             </section>

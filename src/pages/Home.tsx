@@ -1,8 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Code, Database, Smartphone } from 'lucide-react';
+import { useCMS } from '../contexts/CMSContext';
+import EditableText from '../components/EditableText';
 
 const Home: React.FC = () => {
+  const { data, isEditMode, updatePersonalInfo } = useCMS();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -11,14 +15,43 @@ const Home: React.FC = () => {
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               Hi, I'm{' '}
-              <span className="text-primary-600 dark:text-primary-400">Your Name</span>
+              <span className="text-primary-600 dark:text-primary-400">
+                {isEditMode ? (
+                  <EditableText
+                    value={data.personalInfo.name}
+                    onChange={(value) => updatePersonalInfo({ name: value })}
+                    className="text-primary-600 dark:text-primary-400"
+                    tag="span"
+                  />
+                ) : (
+                  data.personalInfo.name
+                )}
+              </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Computer Science Student at BMCC, aspiring to transfer to Columbia University
+              {isEditMode ? (
+                <EditableText
+                  value={data.personalInfo.intro}
+                  onChange={(value) => updatePersonalInfo({ intro: value })}
+                  className="text-xl md:text-2xl text-gray-600 dark:text-gray-300"
+                  tag="span"
+                />
+              ) : (
+                data.personalInfo.intro
+              )}
             </p>
             <p className="text-lg text-gray-700 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
-              Passionate about software development, data structures, and building innovative solutions. 
-              Currently pursuing my Bachelor's degree with a focus on full-stack development and machine learning.
+              {isEditMode ? (
+                <EditableText
+                  value={data.personalInfo.bio}
+                  onChange={(value) => updatePersonalInfo({ bio: value })}
+                  className="text-lg text-gray-700 dark:text-gray-400"
+                  tag="span"
+                  multiline
+                />
+              ) : (
+                data.personalInfo.bio
+              )}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -60,7 +93,7 @@ const Home: React.FC = () => {
                 Programming Languages
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Python, JavaScript, TypeScript, Java, C++, SQL
+                {data.skills.programmingLanguages.join(', ')}
               </p>
             </div>
 
@@ -72,7 +105,7 @@ const Home: React.FC = () => {
                 Frameworks & Tools
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                React, Node.js, Express, MongoDB, Git, Docker
+                {data.skills.webDevelopment.join(', ')}
               </p>
             </div>
 
@@ -84,7 +117,7 @@ const Home: React.FC = () => {
                 Development Focus
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Full-stack development, Mobile apps, Data Science
+                {data.skills.tools.join(', ')}
               </p>
             </div>
           </div>

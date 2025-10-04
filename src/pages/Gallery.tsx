@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { useCMS } from '../contexts/CMSContext';
+import EditableText from '../components/EditableText';
+// import ImageUpload from '../components/ImageUpload';
 
 interface Photo {
   id: number;
@@ -12,80 +15,15 @@ interface Photo {
 const Gallery: React.FC = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
-
-  // Sample photos - replace with your actual photos
-  const photos: Photo[] = [
-    {
-      id: 1,
-      src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
-      alt: 'Coding workspace',
-      caption: 'My coding setup where I spend hours building projects and learning new technologies.',
-      category: 'Work'
-    },
-    {
-      id: 2,
-      src: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop',
-      alt: 'Team collaboration',
-      caption: 'Working with my study group on a group project. Collaboration is key to success!',
-      category: 'Teamwork'
-    },
-    {
-      id: 3,
-      src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop',
-      alt: 'Hackathon event',
-      caption: 'Participating in a 24-hour hackathon. The energy and creativity were incredible!',
-      category: 'Events'
-    },
-    {
-      id: 4,
-      src: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop',
-      alt: 'Study session',
-      caption: 'Late night study sessions with classmates. We learn better together.',
-      category: 'Learning'
-    },
-    {
-      id: 5,
-      src: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=600&fit=crop',
-      alt: 'Outdoor activity',
-      caption: 'Taking a break from coding to enjoy some outdoor activities. Balance is important!',
-      category: 'Personal'
-    },
-    {
-      id: 6,
-      src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop',
-      alt: 'Conference presentation',
-      caption: 'Presenting my project at a tech conference. Great experience sharing knowledge!',
-      category: 'Events'
-    },
-    {
-      id: 7,
-      src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
-      alt: 'Coffee and coding',
-      caption: 'Coffee and coding - the perfect combination for productive coding sessions.',
-      category: 'Work'
-    },
-    {
-      id: 8,
-      src: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop',
-      alt: 'Group study',
-      caption: 'Study group sessions help us understand complex algorithms and data structures.',
-      category: 'Learning'
-    },
-    {
-      id: 9,
-      src: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop',
-      alt: 'Tech meetup',
-      caption: 'Attending local tech meetups to network and learn from industry professionals.',
-      category: 'Events'
-    }
-  ];
+  const { data, isEditMode, updateGalleryItem, addGalleryItem, deleteGalleryItem } = useCMS();
+  const photos = data.gallery;
 
   const categories = ['All', 'Work', 'Teamwork', 'Events', 'Learning', 'Personal'];
   const [activeCategory, setActiveCategory] = useState('All');
 
   const filteredPhotos = activeCategory === 'All' 
     ? photos 
-    : photos.filter(photo => photo.category === activeCategory);
+    : photos.filter((photo: Photo) => photo.category === activeCategory);
 
   const openLightbox = (photo: Photo, index: number) => {
     setSelectedPhoto(photo);
@@ -97,7 +35,7 @@ const Gallery: React.FC = () => {
   };
 
   const navigatePhoto = (direction: 'prev' | 'next') => {
-    const currentIndex = filteredPhotos.findIndex(photo => photo.id === selectedPhoto?.id);
+    const currentIndex = filteredPhotos.findIndex((photo: Photo) => photo.id === selectedPhoto?.id);
     let newIndex;
     
     if (direction === 'prev') {
@@ -128,6 +66,22 @@ const Gallery: React.FC = () => {
             A glimpse into my journey as a Computer Science student, 
             showcasing moments of learning, collaboration, and personal growth.
           </p>
+          {isEditMode && (
+            <div className="mt-6">
+              <button
+                onClick={() => addGalleryItem({
+                  src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+                  alt: 'New photo',
+                  caption: 'Add your caption here...',
+                  category: 'Personal'
+                })}
+                className="flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200 mx-auto"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Add Photo
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Category Filter */}
@@ -149,12 +103,24 @@ const Gallery: React.FC = () => {
 
         {/* Photo Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredPhotos.map((photo, index) => (
+          {filteredPhotos.map((photo: Photo, index: number) => (
             <div
               key={photo.id}
-              className="group cursor-pointer"
-              onClick={() => openLightbox(photo, index)}
+              className="group cursor-pointer relative"
+              onClick={() => !isEditMode && openLightbox(photo, index)}
             >
+              {isEditMode && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteGalleryItem(photo.id);
+                  }}
+                  className="absolute top-2 right-2 z-10 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  title="Delete photo"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
               <div className="relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <img
                   src={photo.src}
@@ -171,8 +137,28 @@ const Gallery: React.FC = () => {
                   </div>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-                  <p className="text-white text-sm font-medium">{photo.caption}</p>
-                  <span className="text-primary-300 text-xs">{photo.category}</span>
+                  {isEditMode ? (
+                    <div className="space-y-2">
+                      <EditableText
+                        value={photo.caption}
+                        onChange={(value) => updateGalleryItem(photo.id, { caption: value })}
+                        className="text-white text-sm font-medium"
+                        tag="span"
+                        multiline
+                      />
+                      <EditableText
+                        value={photo.category}
+                        onChange={(value) => updateGalleryItem(photo.id, { category: value })}
+                        className="text-primary-300 text-xs"
+                        tag="span"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-white text-sm font-medium">{photo.caption}</p>
+                      <span className="text-primary-300 text-xs">{photo.category}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

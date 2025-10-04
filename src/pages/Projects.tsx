@@ -1,5 +1,8 @@
 import React from 'react';
-import { ExternalLink, Github, Code, Database, Smartphone, Globe } from 'lucide-react';
+import { ExternalLink, Github, Code, Database, Smartphone, Globe, Plus, Trash2 } from 'lucide-react';
+import { useCMS } from '../contexts/CMSContext';
+import EditableText from '../components/EditableText';
+import EditableList from '../components/EditableList';
 
 interface Project {
   id: number;
@@ -15,72 +18,8 @@ interface Project {
 }
 
 const Projects: React.FC = () => {
-  const projects: Project[] = [
-    {
-      id: 1,
-      title: 'E-Commerce Platform',
-      description: 'Full-stack e-commerce application with user authentication, payment processing, and admin dashboard.',
-      longDescription: 'A comprehensive e-commerce platform built with React and Node.js, featuring user authentication, product management, shopping cart functionality, and integrated payment processing. Includes an admin dashboard for inventory management and order tracking.',
-      techStack: ['React', 'Node.js', 'MongoDB', 'Stripe API', 'JWT', 'TailwindCSS'],
-      category: 'web',
-      githubUrl: 'https://github.com/yourusername/ecommerce-platform',
-      demoUrl: 'https://your-ecommerce-demo.com',
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Task Management App',
-      description: 'Collaborative task management application with real-time updates and team collaboration features.',
-      longDescription: 'A modern task management application that allows teams to collaborate on projects with real-time updates, drag-and-drop functionality, and advanced filtering options. Built with a focus on user experience and performance.',
-      techStack: ['React', 'TypeScript', 'Socket.io', 'PostgreSQL', 'Redis', 'Docker'],
-      category: 'web',
-      githubUrl: 'https://github.com/yourusername/task-manager',
-      demoUrl: 'https://your-taskmanager-demo.com',
-      featured: true
-    },
-    {
-      id: 3,
-      title: 'Weather Forecast Mobile App',
-      description: 'Cross-platform mobile application providing detailed weather forecasts and location-based alerts.',
-      longDescription: 'A React Native mobile application that provides accurate weather forecasts, location-based alerts, and beautiful weather visualizations. Features include 7-day forecasts, hourly predictions, and severe weather notifications.',
-      techStack: ['React Native', 'TypeScript', 'Weather API', 'Redux', 'AsyncStorage'],
-      category: 'mobile',
-      githubUrl: 'https://github.com/yourusername/weather-app',
-      featured: true
-    },
-    {
-      id: 4,
-      title: 'Data Analysis Dashboard',
-      description: 'Interactive dashboard for analyzing sales data with customizable charts and real-time insights.',
-      longDescription: 'A powerful data visualization dashboard that processes large datasets and presents insights through interactive charts and graphs. Features include real-time data updates, custom filtering, and exportable reports.',
-      techStack: ['Python', 'Pandas', 'Plotly', 'Flask', 'SQLite', 'Bootstrap'],
-      category: 'data',
-      githubUrl: 'https://github.com/yourusername/data-dashboard',
-      demoUrl: 'https://your-dashboard-demo.com',
-      featured: false
-    },
-    {
-      id: 5,
-      title: 'Social Media API',
-      description: 'RESTful API for social media platform with user management, posts, and real-time messaging.',
-      longDescription: 'A scalable RESTful API built with Node.js and Express, featuring user authentication, post management, real-time messaging, and file upload capabilities. Includes comprehensive API documentation and testing suite.',
-      techStack: ['Node.js', 'Express', 'MongoDB', 'Socket.io', 'JWT', 'Multer'],
-      category: 'web',
-      githubUrl: 'https://github.com/yourusername/social-api',
-      featured: false
-    },
-    {
-      id: 6,
-      title: 'Algorithm Visualizer',
-      description: 'Interactive web application for visualizing sorting and searching algorithms with step-by-step animations.',
-      longDescription: 'An educational web application that helps students understand algorithms through interactive visualizations. Features include step-by-step animations, speed controls, and explanations for various sorting and searching algorithms.',
-      techStack: ['React', 'JavaScript', 'D3.js', 'CSS3', 'HTML5'],
-      category: 'web',
-      githubUrl: 'https://github.com/yourusername/algorithm-visualizer',
-      demoUrl: 'https://your-algorithm-demo.com',
-      featured: false
-    }
-  ];
+  const { data, isEditMode, updateProject, addProject, deleteProject } = useCMS();
+  const projects = data.projects;
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -108,8 +47,8 @@ const Projects: React.FC = () => {
     }
   };
 
-  const featuredProjects = projects.filter(project => project.featured);
-  const otherProjects = projects.filter(project => !project.featured);
+  const featuredProjects = projects.filter((project: Project) => project.featured);
+  const otherProjects = projects.filter((project: Project) => !project.featured);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -127,11 +66,29 @@ const Projects: React.FC = () => {
 
         {/* Featured Projects */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
-            Featured Projects
-          </h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Featured Projects
+            </h2>
+            {isEditMode && (
+              <button
+                onClick={() => addProject({
+                  title: 'New Project',
+                  description: 'Project description...',
+                  longDescription: 'Detailed project description...',
+                  techStack: ['React', 'TypeScript'],
+                  category: 'web',
+                  featured: true
+                })}
+                className="flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Project
+              </button>
+            )}
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {featuredProjects.map((project) => (
+            {featuredProjects.map((project: Project) => (
               <div
                 key={project.id}
                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700"
@@ -152,30 +109,67 @@ const Projects: React.FC = () => {
                   </div>
 
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                    {project.title}
+                    {isEditMode ? (
+                      <EditableText
+                        value={project.title}
+                        onChange={(value) => updateProject(project.id, { title: value })}
+                        className="text-2xl font-bold text-gray-900 dark:text-white"
+                        tag="span"
+                      />
+                    ) : (
+                      project.title
+                    )}
                   </h3>
 
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {project.description}
+                    {isEditMode ? (
+                      <EditableText
+                        value={project.description}
+                        onChange={(value) => updateProject(project.id, { description: value })}
+                        className="text-gray-600 dark:text-gray-400"
+                        tag="span"
+                        multiline
+                      />
+                    ) : (
+                      project.description
+                    )}
                   </p>
 
                   <div className="mb-4">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                       Tech Stack:
                     </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.techStack.map((tech, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
+                    {isEditMode ? (
+                      <EditableList
+                        items={project.techStack}
+                        onChange={(items) => updateProject(project.id, { techStack: items })}
+                        placeholder="Add technology..."
+                        className="space-y-1"
+                      />
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {project.techStack.map((tech: string, index: number) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex space-x-4">
+                    {isEditMode && (
+                      <button
+                        onClick={() => deleteProject(project.id)}
+                        className="flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </button>
+                    )}
                     {project.githubUrl && (
                       <a
                         href={project.githubUrl}
@@ -211,7 +205,7 @@ const Projects: React.FC = () => {
             Other Projects
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherProjects.map((project) => (
+            {otherProjects.map((project: Project) => (
               <div
                 key={project.id}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-200 dark:border-gray-700"
@@ -240,7 +234,7 @@ const Projects: React.FC = () => {
 
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-1">
-                      {project.techStack.slice(0, 3).map((tech, index) => (
+                      {project.techStack.slice(0, 3).map((tech: string, index: number) => (
                         <span
                           key={index}
                           className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded"
